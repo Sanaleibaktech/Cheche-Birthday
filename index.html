@@ -11,6 +11,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
 <style>
 :root {
     --gold: #c9a45c;
@@ -62,8 +64,7 @@ button {
     opacity: 0;
     visibility: visible;
     pointer-events: none;
-    transition: opacity .75s cubic-bezier(0.22, 1, 0.36, 1), visibility .75s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity;
+    transition: opacity .55s ease, visibility .55s ease;
 }
 
 #openingScreen.ready {
@@ -80,20 +81,14 @@ button {
 .opening-content {
     width: 100%;
     max-width: 500px;
-    transform: translateY(10px) scale(0.99);
+    transform: translateY(8px);
     opacity: 0;
-    transition: opacity .75s cubic-bezier(0.22, 1, 0.36, 1), transform .75s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity, transform;
+    transition: opacity .65s ease, transform .65s ease;
 }
 
 #openingScreen.ready .opening-content {
     opacity: 1;
-    transform: translateY(0) scale(1);
-}
-
-#openingScreen.hide .opening-content {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.985);
+    transform: translateY(0);
 }
 
 .opening-small {
@@ -135,18 +130,22 @@ button {
     box-shadow: 0 0 30px #c9a45c55;
 }
 
+.reveal-button:disabled {
+    opacity: .65;
+    cursor: default;
+}
+
 /* MAIN CONTENT */
 
 #mainContent {
     opacity: 0;
     visibility: hidden;
-    transform: translateY(18px);
+    transform: translateY(10px);
     transition:
-        opacity .95s cubic-bezier(0.22, 1, 0.36, 1) .14s,
-        transform .95s cubic-bezier(0.22, 1, 0.36, 1) .14s,
-        visibility .95s cubic-bezier(0.22, 1, 0.36, 1) .14s;
+        opacity .75s ease,
+        transform .75s ease,
+        visibility .75s ease;
     padding: 55px 18px 60px;
-    will-change: opacity, transform;
 }
 
 #mainContent.show {
@@ -791,7 +790,7 @@ window.addEventListener("load", () => {
 });
 
 
-/* REVEAL TRANSITION */
+/* REVEAL TRANSITION — SEQUENCED FADE */
 
 const revealButton = document.getElementById("revealButton");
 const openingScreen = document.getElementById("openingScreen");
@@ -809,23 +808,56 @@ revealButton.addEventListener("click", () => {
     revealed = true;
     revealButton.disabled = true;
 
-    window.scrollTo({ top: 0, behavior: "instant" });
-
-    openingScreen.classList.add("hide");
-    mainContent.classList.add("show");
-
+    // Start audio directly from the user's click (required by mobile browsers).
     [piano, sparkle, partyPop].forEach(audio => {
         audio.currentTime = 0;
     });
 
-    Promise.allSettled([
-        piano.play(),
-        sparkle.play(),
-        partyPop.play()
-    ]);
+    piano.play().catch(error => {
+        console.log("Piano playback could not start:", error);
+    });
 
-    startSlideshow();
+    sparkle.play().catch(() => {});
+    partyPop.play().catch(() => {});
+
+    // First fade the opening screen completely out.
+    openingScreen.classList.add("hide");
+
+    // Then reveal the main page, avoiding both screens animating together.
+    window.setTimeout(() => {
+        mainContent.classList.add("show");
+        window.scrollTo({ top: 0, behavior: "instant" });
+        startSlideshow();
+        firePartyPopper();
+    }, 560);
 });
+
+
+/* CONFETTI */
+
+function firePartyPopper() {
+    if (typeof confetti !== "function") return;
+
+    confetti({
+        particleCount: 110,
+        angle: 60,
+        spread: 75,
+        startVelocity: 55,
+        gravity: 1,
+        ticks: 180,
+        origin: { x: 0, y: 0.65 }
+    });
+
+    confetti({
+        particleCount: 110,
+        angle: 120,
+        spread: 75,
+        startVelocity: 55,
+        gravity: 1,
+        ticks: 180,
+        origin: { x: 1, y: 0.65 }
+    });
+}
 
 
 /* SEAMLESS TWO-IMAGE SLIDESHOW */
