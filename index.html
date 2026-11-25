@@ -182,6 +182,14 @@ button {
     width: 100%;
     max-width: 650px;
     margin: 0 auto;
+    opacity: 0;
+    transform: translateY(22px) scale(.975);
+    transition: opacity 1.25s ease, transform 1.25s cubic-bezier(.2,.75,.25,1);
+}
+
+.slideshow.photo-reveal {
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 .photo-frame {
@@ -632,6 +640,25 @@ button {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* CSS CONFETTI FALLBACK */
+.confetti-piece {
+    position: fixed;
+    top: -18px;
+    z-index: 2000;
+    width: 9px;
+    height: 14px;
+    pointer-events: none;
+    opacity: 1;
+    border-radius: 2px;
+    animation: confettiFall var(--fall-time) cubic-bezier(.15,.65,.35,1) forwards;
+}
+@keyframes confettiFall {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 1; }
+    75% { opacity: 1; }
+    100% { transform: translate3d(var(--drift), 110vh, 0) rotate(var(--spin)); opacity: 0; }
+}
+
 </style>
 </head>
 
@@ -816,49 +843,75 @@ revealButton.addEventListener("click", () => {
     piano.play().catch(error => {
         console.log("Piano playback could not start:", error);
     });
-
     sparkle.play().catch(() => {});
     partyPop.play().catch(() => {});
 
-    // First fade the opening screen completely out.
+    // Fade away the opening screen first.
     openingScreen.classList.add("hide");
 
-    // Then reveal the main page, avoiding both screens animating together.
+    // Bring in the page, then softly reveal the photo.
     window.setTimeout(() => {
         mainContent.classList.add("show");
         window.scrollTo({ top: 0, behavior: "instant" });
-        startSlideshow();
-        firePartyPopper();
-    }, 560);
+
+        window.setTimeout(() => {
+            const slideshow = document.querySelector(".slideshow");
+            if (slideshow) slideshow.classList.add("photo-reveal");
+            startSlideshow();
+            firePartyPopper();
+        }, 420);
+    }, 650);
 });
 
 
 /* CONFETTI */
 
 function firePartyPopper() {
-    if (typeof confetti !== "function") return;
+    // Use canvas-confetti when available.
+    if (typeof confetti === "function") {
+        const burst = (originX, angle) => confetti({
+            particleCount: 100,
+            angle,
+            spread: 82,
+            startVelocity: 52,
+            gravity: 0.95,
+            ticks: 210,
+            scalar: 1.05,
+            origin: { x: originX, y: 0.72 }
+        });
 
-    confetti({
-        particleCount: 110,
-        angle: 60,
-        spread: 75,
-        startVelocity: 55,
-        gravity: 1,
-        ticks: 180,
-        origin: { x: 0, y: 0.65 }
-    });
+        burst(0.05, 58);
+        burst(0.95, 122);
+        window.setTimeout(() => {
+            burst(0.18, 72);
+            burst(0.82, 108);
+        }, 260);
+        window.setTimeout(() => {
+            confetti({
+                particleCount: 65,
+                spread: 110,
+                startVelocity: 38,
+                origin: { x: 0.5, y: 0.55 }
+            });
+        }, 650);
+        return;
+    }
 
-    confetti({
-        particleCount: 110,
-        angle: 120,
-        spread: 75,
-        startVelocity: 55,
-        gravity: 1,
-        ticks: 180,
-        origin: { x: 1, y: 0.65 }
-    });
+    // Offline fallback: animated paper pieces using CSS.
+    const colors = ["#c9a45c", "#f3d99b", "#ffffff", "#9fc6a8", "#d98b76"];
+    for (let i = 0; i < 95; i++) {
+        const piece = document.createElement("span");
+        piece.className = "confetti-piece";
+        piece.style.left = (Math.random() * 100) + "vw";
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.setProperty("--drift", ((Math.random() - 0.5) * 260) + "px");
+        piece.style.setProperty("--spin", ((Math.random() - 0.5) * 1500) + "deg");
+        piece.style.setProperty("--fall-time", (2.4 + Math.random() * 2.2) + "s");
+        piece.style.animationDelay = (Math.random() * 0.45) + "s";
+        document.body.appendChild(piece);
+        window.setTimeout(() => piece.remove(), 5200);
+    }
 }
-
 
 /* SEAMLESS TWO-IMAGE SLIDESHOW */
 
