@@ -1,4 +1,4 @@
-<!DOCTYPE html><!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -10,8 +10,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
 <style>
 :root {
@@ -64,7 +62,8 @@ button {
     opacity: 0;
     visibility: visible;
     pointer-events: none;
-    transition: opacity .55s ease, visibility .55s ease;
+    transition: opacity .75s cubic-bezier(0.22, 1, 0.36, 1), visibility .75s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity;
 }
 
 #openingScreen.ready {
@@ -81,14 +80,20 @@ button {
 .opening-content {
     width: 100%;
     max-width: 500px;
-    transform: translateY(8px);
+    transform: translateY(10px) scale(0.99);
     opacity: 0;
-    transition: opacity .65s ease, transform .65s ease;
+    transition: opacity .75s cubic-bezier(0.22, 1, 0.36, 1), transform .75s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
 }
 
 #openingScreen.ready .opening-content {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+}
+
+#openingScreen.hide .opening-content {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.985);
 }
 
 .opening-small {
@@ -135,12 +140,13 @@ button {
 #mainContent {
     opacity: 0;
     visibility: hidden;
-    transform: translateY(10px);
+    transform: translateY(18px);
     transition:
-        opacity .75s ease,
-        transform .75s ease,
-        visibility .75s ease;
+        opacity .95s cubic-bezier(0.22, 1, 0.36, 1) .14s,
+        transform .95s cubic-bezier(0.22, 1, 0.36, 1) .14s,
+        visibility .95s cubic-bezier(0.22, 1, 0.36, 1) .14s;
     padding: 55px 18px 60px;
+    will-change: opacity, transform;
 }
 
 #mainContent.show {
@@ -801,9 +807,12 @@ revealButton.addEventListener("click", () => {
     if (revealed) return;
 
     revealed = true;
+    revealButton.disabled = true;
 
-    mainContent.classList.add("show");
+    window.scrollTo({ top: 0, behavior: "instant" });
+
     openingScreen.classList.add("hide");
+    mainContent.classList.add("show");
 
     [piano, sparkle, partyPop].forEach(audio => {
         audio.currentTime = 0;
@@ -816,35 +825,7 @@ revealButton.addEventListener("click", () => {
     ]);
 
     startSlideshow();
-    firePartyPopper();
 });
-
-
-/* CONFETTI */
-
-function firePartyPopper() {
-    if (typeof confetti !== "function") return;
-
-    confetti({
-        particleCount: 110,
-        angle: 60,
-        spread: 75,
-        startVelocity: 55,
-        gravity: 1,
-        ticks: 180,
-        origin: { x: 0, y: 0.65 }
-    });
-
-    confetti({
-        particleCount: 110,
-        angle: 120,
-        spread: 75,
-        startVelocity: 55,
-        gravity: 1,
-        ticks: 180,
-        origin: { x: 1, y: 0.65 }
-    });
-}
 
 
 /* SEAMLESS TWO-IMAGE SLIDESHOW */
@@ -1239,30 +1220,4 @@ musicButton.addEventListener("click", async () => {
 </script>
 
 </body>
-</html>
-<html>
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
-</head>
-
-<body>
-  
-</body>
-
-</html>
-<html>
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
-</head>
-
-<body>
-  
-</body>
-
 </html>
