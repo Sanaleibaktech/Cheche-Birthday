@@ -64,7 +64,7 @@ button {
     opacity: 0;
     visibility: visible;
     pointer-events: none;
-    transition: opacity .35s ease, visibility .35s ease;
+    transition: opacity .55s ease, visibility .55s ease;
 }
 
 #openingScreen.ready {
@@ -83,7 +83,7 @@ button {
     max-width: 500px;
     transform: translateY(8px);
     opacity: 0;
-    transition: opacity .4s ease, transform .4s ease;
+    transition: opacity .65s ease, transform .65s ease;
 }
 
 #openingScreen.ready .opening-content {
@@ -142,9 +142,9 @@ button {
     visibility: hidden;
     transform: translateY(10px);
     transition:
-        opacity .45s ease,
-        transform .45s ease,
-        visibility .45s ease;
+        opacity .75s ease,
+        transform .75s ease,
+        visibility .75s ease;
     padding: 55px 18px 60px;
 }
 
@@ -184,7 +184,7 @@ button {
     margin: 0 auto;
     opacity: 0;
     transform: translateY(22px) scale(.975);
-    transition: opacity .6s ease, transform .6s cubic-bezier(.2,.75,.25,1);
+    transition: opacity 1.25s ease, transform 1.25s cubic-bezier(.2,.75,.25,1);
 }
 
 .slideshow.photo-reveal {
@@ -846,18 +846,16 @@ revealButton.addEventListener("click", () => {
     sparkle.play().catch(() => {});
     partyPop.play().catch(() => {});
 
-    // Quick, smooth handoff: fade the intro, then reveal the page and photo.
+    // Start both CSS transitions immediately when Reveal is tapped.
     openingScreen.classList.add("hide");
+    mainContent.classList.add("show");
+    window.scrollTo({ top: 0, behavior: "instant" });
 
-    window.setTimeout(() => {
-        mainContent.classList.add("show");
-        const slideshow = document.querySelector(".slideshow");
-        if (slideshow) slideshow.classList.add("photo-reveal");
-
-        window.scrollTo({ top: 0, behavior: "instant" });
-        startSlideshow();
-        firePartyPopper();
-    }, 280);
+    // Reveal the photo smoothly and launch the celebration without an artificial delay.
+    const slideshow = document.querySelector(".slideshow");
+    if (slideshow) slideshow.classList.add("photo-reveal");
+    startSlideshow();
+    firePartyPopper();
 });
 
 
