@@ -835,27 +835,29 @@ revealButton.addEventListener("click", () => {
     revealed = true;
     revealButton.disabled = true;
 
-    // Start audio directly from the user's click (required by mobile browsers).
-    [piano, sparkle, partyPop].forEach(audio => {
-        audio.currentTime = 0;
-    });
-
-    piano.play().catch(error => {
-        console.log("Piano playback could not start:", error);
-    });
-    sparkle.play().catch(() => {});
-    partyPop.play().catch(() => {});
-
-    // Start both CSS transitions immediately when Reveal is tapped.
+    // Start every visual and audio effect from this same tap, in the same event turn.
     openingScreen.classList.add("hide");
     mainContent.classList.add("show");
     window.scrollTo({ top: 0, behavior: "instant" });
 
-    // Reveal the photo smoothly and launch the celebration without an artificial delay.
     const slideshow = document.querySelector(".slideshow");
     if (slideshow) slideshow.classList.add("photo-reveal");
     startSlideshow();
     firePartyPopper();
+
+    // Start piano, sparkle and party-pop together with the reveal/confetti.
+    [piano, sparkle, partyPop].forEach(audio => {
+        try {
+            audio.pause();
+            audio.currentTime = 0;
+            const playback = audio.play();
+            if (playback && typeof playback.catch === "function") {
+                playback.catch(error => console.log("Audio playback could not start:", error));
+            }
+        } catch (error) {
+            console.log("Audio playback could not start:", error);
+        }
+    });
 });
 
 
